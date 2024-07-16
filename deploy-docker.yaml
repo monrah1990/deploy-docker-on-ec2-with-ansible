@@ -1,9 +1,9 @@
 ---
-- name: Install Python3 and docker
+- name: Install Python3, docker and docker-compose
   hosts: docker_server
   become: yes
   tasks:
-    - name: Install python3 and docker
+    - name: Make sure python3 and docker are installed
       vars:
         ansible_python_interpreter: /usr/bin/pthon
       yum:
@@ -12,26 +12,16 @@
           - docker
         update_cache: yes
         state: present
-
-- name: Install docker compose
-  hosts: docker_server
-  become: yes
-  tasks:
-    - name: Install docker compose
+    - name: Install docker-compose
       get_url:
         url: https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-{{lookup('pipe', 'uname -m')}}
         dest: /usr/local/bin/docker-compose
         mode: +x
-
-- name: Start docker 
-  hosts: docker_server
-  become: yes
-  tasks:
-    - name: Start docker daemon
+    - name: Ensure docker is running
       systemd:
         name: docker
         state: started
-    
+   
 - name: Add ec2-user to docker group
   hosts: docker_server
   become: yes
