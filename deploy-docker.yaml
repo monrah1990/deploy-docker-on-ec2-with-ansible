@@ -21,6 +21,11 @@
       systemd:
         name: docker
         state: started
+    - name: Install docker python module
+      pip:
+        name: 
+          - docker
+          - docker-compose
    
 - name: Add ec2-user to docker group
   hosts: docker_server
@@ -34,8 +39,22 @@
     - name: Reconnect to server session
       meta: reset_connection
 
-- name: Test docker pull
+- name: Start docker container
   hosts: docker_server
   tasks:
-    - name: pull redis
-      command: docker pull redis
+  vars_prompt:
+    - name: docker_password
+      prompt: Enter password for docker registry
+    - name: copy docker compose
+      copy:
+        src: /Documents/nana/ansible/bootcamp-java-mysql-project/docker-compose-full.yaml
+        dest: /usr/ec2-user/docker-compose.yaml
+    - name: docker login
+      docker_login:
+        registry_url: https://index.docker.io/v1
+        username: monirerahmani
+        password: "{{docker_password}}"
+    - name: Start container from compose
+      docker_compose:
+        project_src: /home/ec2-user
+        state: present
